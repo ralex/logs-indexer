@@ -35,14 +35,12 @@ fn main() {
 
     // Spawn a new thread to listen for new writes to the file
     thread::spawn(move || {
-        let index_path_clone = index_path.clone();
-        let file_path_clone = file_path.clone();
         loop {
-            if check_file_size(&file_path_clone) < file_size_indicator {
-                write_index(&index_path_clone, 0)
+            if check_file_size(&file_path) < file_size_indicator {
+                write_index(&index_path, 0)
             }
 
-            let lines: Vec<String> = fs::read_to_string(&file_path_clone)
+            let lines: Vec<String> = fs::read_to_string(&file_path)
                 .unwrap()
                 .lines()
                 .skip(last_line_read)
@@ -51,7 +49,7 @@ fn main() {
             if !lines.is_empty() {
                 last_line_read += lines.len();
                 // Update the index file with the new last line read
-                write_index(&index_path_clone, last_line_read);
+                write_index(&index_path, last_line_read);
 
                 tx.send(lines).unwrap();
             }
@@ -67,7 +65,7 @@ fn main() {
     }
 }
 
-/// Check if file size is shrinking to detect de log file rotation
+/// Check if file size is shrinking to detect a log file rotation
 /// 
 fn check_file_size(file: &PathBuf) -> u64 {
     // Check the file size
